@@ -18,4 +18,4 @@ def add_srid(wkb, srid=4326):
     result = lgeos.GEOSWKBWriter_writeHEX(writer, geos_geom, pointer(size))
     data = string_at(result, size.value)
     lgeos.GEOSFree(result)
-    return data.decode("ascii")
+    return data.decode('ascii')

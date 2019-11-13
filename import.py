@@ -41,15 +41,15 @@ def write_to_db(feature_generator, table_name):
     columns = ['id', 'version', 'timestamp', 'tags', 'geom']
 
     connection = get_pg_conn()
-    num = 100000
-    c = 0
+    num = 200000
+
     with connection.cursor() as cur:
         for file_generator in split_generator(feature_generator, num):
-            c += 1
+
             file = IteratorFile(file_generator, columns)
             cur.copy_from(file, table_name, columns=columns)
             connection.commit()
-            print('commit', c * num)
+            print('commit')
 
 
 if __name__ == '__main__':

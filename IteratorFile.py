@@ -49,9 +49,7 @@ class IteratorFile(io.TextIOBase):
     def __init__(self, records, columns):
         self._records = records
         self._columns = columns
-
         self._f = io.StringIO()
-        self._count = 0
 
     def read(self, length=sys.maxsize):
 
@@ -81,5 +79,4 @@ class IteratorFile(io.TextIOBase):
 
     def _get_next(self):
         record = next(self._records)
-        self._count += 1
         return format_line(record, self._columns)
