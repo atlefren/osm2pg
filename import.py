@@ -32,6 +32,7 @@ def read_and_parse(osmfile):
     start_new_thread(task, ())
     while True:
         next_item = queue.get(True)  # Blocks until an input is available
+        queue.task_done()
         if next_item is job_done:
             break
         yield next_item
