@@ -52,7 +52,26 @@ class IteratorFile(io.TextIOBase):
         self._f = io.StringIO()
 
     def read(self, length=sys.maxsize):
-        pass
+        try:
+            while self._f.tell() < length:
+                self._f.write(self._get_next() + '\n')
+        except StopIteration:
+            # soak up StopIteration. this block is not necessary because
+            # of finally, but just to be explicit
+            pass
+        except Exception as e:
+            print('uncaught exception: {}'.format(e))
+            raise e
+        finally:
+            self._f.seek(0)
+            data = self._f.read(length)
+
+            # save the remainder for next read
+            remainder = self._f.read()
+            self._f.seek(0)
+            self._f.truncate(0)
+            self._f.write(remainder)
+            return data
 
     def readline(self):
         return self._get_next()
