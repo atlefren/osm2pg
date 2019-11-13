@@ -37,7 +37,10 @@ def format_line(record, columns):
             )))
         else:
             data.append(value)
-    return line_template % tuple(data)
+    line = line_template % tuple(data)
+    del record
+    del data
+    return line
 
 
 class IteratorFile(io.TextIOBase):

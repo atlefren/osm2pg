@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import osmium
 
 from ewkb import add_srid
@@ -26,11 +25,12 @@ class WKBHandler(osmium.SimpleHandler):
         data = {
             'id': obj.id,
             'version': obj.version,
-            'timestamp': obj.timestamp,
+            # using obj.timestamp here causes a massive memory leak. Why?
+            'timestamp': None,
             'tags': tags,
             'geom': add_srid(geom)
         }
-
+        del obj
         self.queue.put(data)
 
     def node(self, n):
