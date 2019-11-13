@@ -102,11 +102,11 @@ def readWkbHex(wkbhex):
 
 
 def writeEWkbHex(geos_geom, srid=4326):
+    lgeos.GEOSSetSRID(geos_geom, srid)
     writer = lgeos.GEOSWKBWriter_create()
     _lgeos.GEOSWKBWriter_setIncludeSRID(writer, bool(True))
     size = c_size_t()
     result = lgeos.GEOSWKBWriter_writeHEX(writer, geos_geom, pointer(size))
-    lgeos.GEOSSetSRID(geos_geom, srid)
     data = string_at(result, size.value)
     lgeos.GEOSFree(result)
     lgeos.GEOSWKBWriter_destroy(writer)
