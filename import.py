@@ -1,4 +1,4 @@
-# import tracemalloc
+import tracemalloc
 import sys
 import os
 import psycopg2
@@ -44,8 +44,8 @@ def write_to_db(feature_generator, table_name):
 
     connection = get_pg_conn()
     num = 200000
-    # tracemalloc.start()
-    # start = tracemalloc.take_snapshot()
+    tracemalloc.start()
+    start = tracemalloc.take_snapshot()
     with connection.cursor() as cur:
         for file_generator in split_generator(feature_generator, num):
 
@@ -53,10 +53,10 @@ def write_to_db(feature_generator, table_name):
             cur.copy_from(file, table_name, columns=columns)
             connection.commit()
             print('commit')
-            # current = tracemalloc.take_snapshot()
-            # stats = current.compare_to(start, 'filename')
-            # for i, stat in enumerate(stats[:1], 1):
-            #     print('since_start', i, str(stat))
+            current = tracemalloc.take_snapshot()
+            stats = current.compare_to(start, 'filename')
+            for i, stat in enumerate(stats[:1], 1):
+                print('since_start', i, str(stat))
 
 
 if __name__ == '__main__':
