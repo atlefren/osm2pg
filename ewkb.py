@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
-from lgeos import readWkbHex, writeEWkbHex
+from pygeos import to_wkb, from_wkb, set_srid
 
 
 def add_srid(wkb, srid=4326):
-    try:
-        geom = readWkbHex(wkb)
-        ewkt = writeEWkbHex(geom, srid)
-        return ewkt
-    except MemoryError as e:
-        print(e)
-        raise e
+    return to_wkb(set_srid(from_wkb(wkb), srid), hex=True, include_srid=True)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import osmium
+import copy
 
 from ewkb import add_srid
 
@@ -7,7 +8,7 @@ from ewkb import add_srid
 def parse_taglist(taglist):
     res = {}
     for tag in taglist:
-        res[tag.k] = tag.v
+        res[tag.k] = copy.deepcopy(tag.v)
     return res
 
 
@@ -23,15 +24,15 @@ class WKBHandler(osmium.SimpleHandler):
     def save_geom(self, geom, obj):
         tags = parse_taglist(obj.tags)
         data = {
-            'id': obj.id,
-            'version': obj.version,
-            # using obj.timestamp here causes a massive memory leak. Why?
-            'timestamp': None,
+            'id': copy.deepcopy(obj.id),
+            'version': copy.deepcopy(obj.version),
+            'timestamp': copy.deepcopy(obj.timestamp),
             'tags': tags,
             'geom': add_srid(geom)
         }
         del obj
         self.queue.put(data)
+        self.queue.join()  # Blocks until task_done is called
 
     def node(self, n):
         g = wkb_factory.create_point(n)

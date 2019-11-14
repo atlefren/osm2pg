@@ -3,6 +3,9 @@ import sys
 import os
 import psycopg2
 
+import guppy
+
+
 from queue import Queue
 from _thread import start_new_thread
 
@@ -29,14 +32,15 @@ def read_and_parse(osmfile):
         handler = WKBHandler(queue)
         handler.apply_file(osmfile, locations=True)
         queue.put(job_done)
+        queue.join()  # Blocks until task_done is called
 
     start_new_thread(task, ())
     while True:
         next_item = queue.get(True)  # Blocks until an input is available
-        queue.task_done()
         if next_item is job_done:
             break
         yield next_item
+        queue.task_done()
 
 
 def write_to_db(feature_generator, table_name):
@@ -44,8 +48,7 @@ def write_to_db(feature_generator, table_name):
 
     connection = get_pg_conn()
     num = 200000
-    tracemalloc.start()
-    start = tracemalloc.take_snapshot()
+    heapy = guppy.hpy()
     with connection.cursor() as cur:
         for file_generator in split_generator(feature_generator, num):
 
@@ -53,10 +56,9 @@ def write_to_db(feature_generator, table_name):
             cur.copy_from(file, table_name, columns=columns)
             connection.commit()
             print('commit')
-            current = tracemalloc.take_snapshot()
-            stats = current.compare_to(start, 'filename')
-            for i, stat in enumerate(stats[:1], 1):
-                print('since_start', i, str(stat))
+            print(heapy.heap())
+            del file
+            heapy.setref()
 
 
 if __name__ == '__main__':

@@ -1,2 +1,4 @@
 osmium==2.15.3
 psycopg2==2.8.4
+pygeos==0.5
+guppy3==3.0.8
