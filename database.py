@@ -19,7 +19,7 @@ class Database:
 
     def ensure_table(self, table_name):
         conn = self.get_connection()
-        with conn.get_cursor() as cur:
+        with conn.cursor() as cur:
             cur.execute(f'''
                 CREATE TABLE IF NOT EXISTS {table_name} (
                     id bigint,
@@ -36,7 +36,7 @@ class Database:
         print(f'save to {table_name}')
         self.ensure_table(table_name)
         conn = self.get_connection()
-        with conn.get_cursor() as cur:
+        with conn.cursor() as cur:
             for generator in split(feature_generator, self.partition):
                 file = IteratorFile(generator, self.columns)
                 cur.copy_from(file, table_name, columns=self.columns)
