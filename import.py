@@ -1,25 +1,13 @@
-import tracemalloc
 import sys
 import os
-import psycopg2
-
-import guppy
-
 
 from queue import Queue
 from _thread import start_new_thread
-
 from WkbHandler import WKBHandler
-from IteratorFile import IteratorFile
-from split_generator import split_generator
+from database import Database
 
 
-def get_pg_conn():
-    conn_str = os.environ['CONN_STR']
-    return psycopg2.connect(conn_str)
-
-
-def read_and_parse(osmfile):
+def read_and_parse(osmfile, geom_type):
     """
     Uses Osmium and our WKBHandler to parse geometries
     Use some tricks (a Queue and a new thread) to convert
@@ -29,12 +17,17 @@ def read_and_parse(osmfile):
     job_done = object()
 
     def task():
-        handler = WKBHandler(queue)
-        handler.apply_file(osmfile, locations=True)
+        handler = WKBHandler(geom_type, queue)
+        handler.apply_file(
+            osmfile,
+            locations=True,
+            idx=f'dense_file_array,{geom_type}.nodecache'
+        )
         queue.put(job_done)
         queue.join()  # Blocks until task_done is called
 
     start_new_thread(task, ())
+
     while True:
         next_item = queue.get(True)  # Blocks until an input is available
         if next_item is job_done:
@@ -43,29 +36,14 @@ def read_and_parse(osmfile):
         queue.task_done()
 
 
-def write_to_db(feature_generator, table_name):
-    columns = ['id', 'version', 'timestamp', 'tags', 'geom']
-
-    connection = get_pg_conn()
-    num = 200000
-    heapy = guppy.hpy()
-    with connection.cursor() as cur:
-        for file_generator in split_generator(feature_generator, num):
-
-            file = IteratorFile(file_generator, columns)
-            cur.copy_from(file, table_name, columns=columns)
-            connection.commit()
-            print('commit')
-            print(heapy.heap())
-            del file
-            heapy.setref()
-
-
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print("Usage: python %s <osmfile>" % sys.argv[0])
         sys.exit(-1)
 
     path = sys.argv[1]
-    generator = read_and_parse(path)
-    write_to_db(generator, 'diff.osm')
+    db = Database(os.environ['CONN_STR'])
+    geom_types = ['point', 'linestring', 'polygon']
+    for geom_type in geom_types:
+        generator = read_and_parse(path, geom_type)
+        db.write(generator, f'diff.osm_{geom_type}')

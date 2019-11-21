@@ -68,7 +68,6 @@ class IteratorFile(io.TextIOBase):
         finally:
             self._f.seek(0)
             data = self._f.read(length)
-
             # save the remainder for next read
             remainder = self._f.read()
             self._f.seek(0)
