@@ -12,13 +12,14 @@ class Database:
         self.columns = ['id', 'version', 'timestamp', 'tags', 'geom']
         self.conn = None
 
-    def get_cursor(self):
+    def get_connection(self):
         if not self.conn:
             self.conn = psycopg2.connect(self.conn_str)
-        return self.conn.cursor()
+        return self.conn
 
     def ensure_table(self, table_name):
-        with self.get_cursor() as cur:
+        conn = self.get_connection()
+        with conn.get_cursor() as cur:
             cur.execute(f'''
                 CREATE TABLE IF NOT EXISTS {table_name} (
                     id bigint,
@@ -29,14 +30,15 @@ class Database:
                 )
             ''')
             cur.execute(f'TRUNCATE TABLE {table_name}')
-            cur.commit()
+            conn.commit()
 
     def write(self, feature_generator, table_name):
         print(f'save to {table_name}')
         self.ensure_table(table_name)
-        with self.get_cursor() as cur:
+        conn = self.get_connection()
+        with conn.get_cursor() as cur:
             for generator in split(feature_generator, self.partition):
                 file = IteratorFile(generator, self.columns)
                 cur.copy_from(file, table_name, columns=self.columns)
-                cur.commit()
+                conn.commit()
                 print('commit')
