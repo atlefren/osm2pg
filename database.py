@@ -7,7 +7,7 @@ from IteratorFile import IteratorFile
 
 
 class Database:
-    def __init__(self, conn_str, partition=20000):
+    def __init__(self, conn_str, partition=100000):
         self.conn_str = conn_str
         self.partition = partition
         self.columns = ['id', 'version', 'timestamp', 'tags', 'geom']
