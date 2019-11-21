@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 import psycopg2
 
 from split_generator import split_generator as split
@@ -36,9 +37,12 @@ class Database:
         print(f'save to {table_name}')
         self.ensure_table(table_name)
         conn = self.get_connection()
+        c = 1
         with conn.cursor() as cur:
             for generator in split(feature_generator, self.partition):
                 file = IteratorFile(generator, self.columns)
                 cur.copy_from(file, table_name, columns=self.columns)
                 conn.commit()
-                print('commit')
+                sys.stdout.write(f'\rWritten: {c * self.partition:,}')
+                sys.stdout.flush()
+                c += 1

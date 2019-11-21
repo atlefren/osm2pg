@@ -21,7 +21,7 @@ def read_and_parse(osmfile, geom_type):
         handler.apply_file(
             osmfile,
             locations=True,
-            idx=f'dense_file_array,{geom_type}.nodecache'
+            idx=f'dense_file_array,cache.nodecache'
         )
         queue.put(job_done)
         queue.join()  # Blocks until task_done is called
