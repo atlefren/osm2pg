@@ -29,6 +29,7 @@ class Database:
                 )
             ''')
             cur.execute(f'TRUNCATE TABLE {table_name}')
+            cur.commit()
 
     def write(self, feature_generator, table_name):
         print(f'save to {table_name}')
@@ -37,4 +38,5 @@ class Database:
             for generator in split(feature_generator, self.partition):
                 file = IteratorFile(generator, self.columns)
                 cur.copy_from(file, table_name, columns=self.columns)
+                cur.commit()
                 print('commit')
