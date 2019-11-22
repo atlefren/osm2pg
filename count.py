@@ -7,16 +7,18 @@ class CountHandler(osmium.SimpleHandler):
 
     def __init__(self):
         super(CountHandler, self).__init__()
-        self.c = 0
+        self.nodes = 0
+        self.areas = 0
+        self.ways = 0
 
     def node(self, n):
-        self.c += 1
+        self.nodes += 1
 
     def area(self, a):
-        self.c += 1
+        self.areas += 1
 
     def way(self, w):
-        self.c += 1
+        self.ways += 1
 
 
 if __name__ == '__main__':
@@ -28,4 +30,6 @@ if __name__ == '__main__':
 
     handler = CountHandler()
     handler.apply_file(path, locations=False)
-    print(handler.c)
+    print(f'nodes: {handler.nodes:,}')
+    print(f'ways: {handler.ways:,}')
+    print(f'areas: {handler.areas:,}')

@@ -37,18 +37,27 @@ class WKBHandler(osmium.SimpleHandler):
 
     def node(self, n):
         if self.geom_type != 'point':
-            pass
-        g = wkb_factory.create_point(n)
-        self.save_geom(g, n)
+            return
+        try:
+            g = wkb_factory.create_point(n)
+            self.save_geom(g, n)
+        except Exception as e:
+            print('err', e, n.id)
 
     def area(self, a):
         if self.geom_type != 'polygon':
-            pass
-        g = wkb_factory.create_multipolygon(a)
-        self.save_geom(g, a)
+            return
+        try:
+            g = wkb_factory.create_multipolygon(a)
+            self.save_geom(g, a)
+        except Exception as e:
+            print('err', e, a.id)
 
     def way(self, w):
         if self.geom_type != 'linestring':
-            pass
-        g = wkb_factory.create_linestring(w)
-        self.save_geom(g, w)
+            return
+        try:
+            g = wkb_factory.create_linestring(w)
+            self.save_geom(g, w)
+        except Exception as e:
+            print('err', e, w.id)
